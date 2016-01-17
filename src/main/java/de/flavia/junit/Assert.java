@@ -6,7 +6,6 @@ import de.flavia.function.ThrowingTrigger;
 import java.util.Arrays;
 import java.util.function.Consumer;
 
-
 /**
  * Created by mwildt on 17.01.16.
  */
@@ -24,12 +23,16 @@ public class Assert {
     public static <T extends Throwable, U> U assertThrows(String message, Class<T> type, ThrowingSupplier<U> supplier, Consumer<T>... consumer){
         U value = null;
         try{
-            supplier.get();
-            org.junit.Assert.fail(message);
+            value = supplier.throwingGet();
         } catch (Throwable error){
             Assert.assetError(message, error.getCause(), type, consumer);
+            return value; // assertions succeeds if Exception was caught and tested with no AssertionError
         }
-        return value;
+        /*
+         * assertion fails if no exception is caught
+         * fail() is not used here cause its not recognized to end the execution
+         */
+        throw new AssertionError(message);
     }
 
     public static <T extends Throwable> void assertThrows(Class<T> type, ThrowingTrigger trigger, Consumer<T>... consumer){
@@ -43,23 +46,27 @@ public class Assert {
 
     public static <T extends Throwable> void assertThrows(String message, Class<T> type, ThrowingTrigger trigger, Consumer<T>... consumer){
         try{
-            trigger.trigger();
-            org.junit.Assert.fail(message);
+            trigger.throwingTrigger();
         } catch (Throwable error){
             Assert.assetError(message, error.getCause(), type, consumer);
+            return; // assertions succeeds if Exception was caught and tested with no AssertionError
         }
+        /*
+         * assertion fails if no exception is caught
+         * fail() is not used here cause its not recognized to end the execution
+         */
+        throw new AssertionError(message);
     }
 
-    private static <T> void assetError(String message, Throwable cause, Class<T> type, Consumer<T>... consumer){
+    static <T> void assetError(String message, Throwable cause, Class<T> type, Consumer<T>... consumer){
         org.junit.Assert.assertTrue(message, cause.getClass().isAssignableFrom(type));
         assertConsumer((T) cause, consumer);
     }
 
-    private static <T> void assertConsumer(T cause, Consumer<T> ... consumers){
+    static <T> void assertConsumer(T cause, Consumer<T> ... consumers){
         Arrays.asList(consumers)
                 .stream()
                 .forEach(consumer -> consumer.accept(cause));
     }
-
 
 }

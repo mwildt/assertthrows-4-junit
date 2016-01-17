@@ -7,7 +7,12 @@
 .classpath
 .settings/
 
-.idea/
+.idea/**
+
+*.iml
+*.ipr
+*.iws
+
 
 target/
 build/
