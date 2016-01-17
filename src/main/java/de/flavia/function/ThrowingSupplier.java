@@ -5,7 +5,7 @@ package de.flavia.function;
  */
 public interface ThrowingSupplier<U> {
 
-    <T> T get();
+    <T> T get() throws Exception;
 
     default <T> T throwingGet() {
         try{
