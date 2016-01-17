@@ -1,6 +1,6 @@
 # Java 8 exception Assertion Utils for JUnit
 
-## Requirements:
+## requirements:
 * Java 8
 * Junit 4
 
