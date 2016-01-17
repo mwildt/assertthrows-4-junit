@@ -4,11 +4,9 @@
 * Java 8
 * Junit 4
 
-##
+## usage
 
-~~~ usage
-
-
+~~~
 import static de.flavia.junit.Assert.*
 
 public class MyTest {
