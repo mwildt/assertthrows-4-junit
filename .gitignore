@@ -1,0 +1,14 @@
+######################
+# Eclipse
+######################
+
+.project
+.metadata
+.classpath
+.settings/
+
+.idea/
+
+target/
+build/
+bin/
