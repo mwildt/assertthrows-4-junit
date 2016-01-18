@@ -9,9 +9,28 @@ import java.util.function.Consumer;
 /**
  * Created by mwildt on 17.01.16.
  */
-public class Assert {
+public class Assert<T extends Throwable> {
 
-    public static <T extends Throwable, U> U assertThrows(Class<T> type, ThrowingSupplier<U> supplier, Consumer<T>... consumer){
+    private T cause;
+
+    private Assert(T cause){
+        this.cause = cause;
+    }
+
+    public Assert<T> thenAssertException(Consumer<T> consumer){
+        consumer.accept(cause);
+        return this;
+    }
+
+    public T getCause(){
+        return this.cause;
+    }
+
+    /*
+     * static assertion section
+     */
+
+    public static <T extends Throwable, U> Assert<T> assertThrows(Class<T> type, ThrowingSupplier<U> supplier, Consumer<T> ... consumer){
         return Assert.assertThrows (
             String.format("The expected exception of typ %s was not thrown", type.getCanonicalName()),
             type,
@@ -20,13 +39,13 @@ public class Assert {
         );
     }
 
-    public static <T extends Throwable, U> U assertThrows(String message, Class<T> type, ThrowingSupplier<U> supplier, Consumer<T>... consumer){
-        U value = null;
+    public static <T extends Throwable, U> Assert<T> assertThrows(String message, Class<T> type, ThrowingSupplier<U> supplier, Consumer<T>... consumer){
         try{
-            value = supplier.throwingGet();
+            supplier.throwingGet();
         } catch (Throwable error){
             Assert.assetError(message, error.getCause(), type, consumer);
-            return value; // assertions succeeds if Exception was caught and tested with no AssertionError
+            // assertions succeeds if Exception was caught and tested with no AssertionError
+            return new Assert<T>((T) error.getCause());
         }
         /*
          * assertion fails if no exception is caught
@@ -35,8 +54,8 @@ public class Assert {
         throw new AssertionError(message);
     }
 
-    public static <T extends Throwable> void assertThrows(Class<T> type, ThrowingTrigger trigger, Consumer<T>... consumer){
-        Assert.assertThrows(
+    public static <T extends Throwable> Assert<T> assertThrows(Class<T> type, ThrowingTrigger trigger, Consumer<T>... consumer){
+        return Assert.assertThrows(
             String.format("The expected exception of typ %s was not thrown", type.getCanonicalName()),
             type,
             trigger,
@@ -44,12 +63,13 @@ public class Assert {
         );
     }
 
-    public static <T extends Throwable> void assertThrows(String message, Class<T> type, ThrowingTrigger trigger, Consumer<T>... consumer){
+    public static <T extends Throwable> Assert<T> assertThrows(String message, Class<T> type, ThrowingTrigger trigger, Consumer<T>... consumer){
         try{
             trigger.throwingTrigger();
         } catch (Throwable error){
             Assert.assetError(message, error.getCause(), type, consumer);
-            return; // assertions succeeds if Exception was caught and tested with no AssertionError
+            // assertions succeeds if Exception was caught and tested with no AssertionError
+            return new Assert<T>((T) error.getCause());
         }
         /*
          * assertion fails if no exception is caught
@@ -65,8 +85,8 @@ public class Assert {
 
     static <T> void assertConsumer(T cause, Consumer<T> ... consumers){
         Arrays.asList(consumers)
-                .stream()
-                .forEach(consumer -> consumer.accept(cause));
+            .stream()
+            .forEach(consumer -> consumer.accept(cause));
     }
 
 }

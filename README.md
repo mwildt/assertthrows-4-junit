@@ -45,3 +45,13 @@ public class MyTest {
     }
 }
 ~~~
+
+It is also possible to assert on the exception itself in a more fluent way.
+~~~
+    @Test
+    public void fluentUsage(){
+        assertThrows(MyException.class, () -> triggerException())
+            .thenAssertException((e) -> assertEquals(e.getMessage(), "MyException message")),
+            .thenAssertException((e) -> assertTrue(e.code() % 3 == 2));
+    }
+~~~
